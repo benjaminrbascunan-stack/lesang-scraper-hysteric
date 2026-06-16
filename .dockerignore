@@ -1,0 +1,10 @@
+__pycache__
+*.pyc
+resultados.json
+buscar_resultado.json
+server.log
+.git
+.venv
+venv
+env
+.DS_Store
