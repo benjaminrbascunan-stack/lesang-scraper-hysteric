@@ -68,7 +68,7 @@ def scrape_keyword(pagina, keyword, vistos, resultados):
         print(f"  ⚠️ No cargó: {e}")
         return
 
-    for _ in range(13):
+    for _ in range(1):
         pagina.mouse.wheel(0, 3000)
         animacion_carga(pagina, 0.7, "Cargando productos")
 
