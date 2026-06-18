@@ -3,43 +3,44 @@ import json
 import time
 import sys
 
-# ─────────────────────────────────────────────
-# CONFIGURACIÓN
-# ─────────────────────────────────────────────
-
-# Rango de precio de COMPRA en yenes
-# 2000 ≈ $14.000 CLP  |  14000 ≈ $98.000 CLP (techo para piezas excepcionales)
 PRECIO_MIN = 2000
-PRECIO_MAX = 14000
+PRECIO_MAX = 13000
 
-# Palabras que EXCLUYEN un producto (no valen la pena)
 EXCLUIR = [
-    "Tシャツ",      # camiseta / polera
-    "半袖",         # manga corta
-    "カットソー",    # cut & sew (polera fina)
+    "oversea",
+    "OVERSEA",
 ]
 
-# Keywords de búsqueda (Vivienne Westwood)
 KEYWORDS = [
-    # — Bolsos y carteras —
-    "ヴィヴィアンウエストウッド バッグ",        # bag
-    "ヴィヴィアンウエストウッド クラッチ",      # clutch
-    "ヴィヴィアンウエストウッド トートバッグ",   # tote
-    "ヴィヴィアンウエストウッド ショルダー",     # shoulder
-    "ヴィヴィアンウエストウッド オーブ バッグ",   # orb bag
-    # — Ropa —
-    "ヴィヴィアンウエストウッド パーカー",       # hoodie
-    "ヴィヴィアンウエストウッド ニット",         # knit / sweater
-    # — Joyería (alta tasa de réplica: verificar autenticidad) —
-    "ヴィヴィアンウエストウッド ネックレス",     # necklace / collar
-    "ヴィヴィアンウエストウッド ブレスレット",   # bracelet / brazalete
-    "ヴィヴィアンウエストウッド リング",         # ring / anillo
-    "ヴィヴィアンウエストウッド チョーカー",     # choker
+    # — Ropa (FOCO PRINCIPAL: hoodies, zips, chaquetas) —
+    "ヒステリックグラマー パーカー",          # hoodie
+    "ヒステリックグラマー フーディー",        # hoodie (variante)
+    "ヒステリックグラマー ジップパーカー",    # zip hoodie
+    "ヒステリックグラマー ジップ",            # zip
+    "ヒステリックグラマー ジャケット",        # jacket
+    "ヒステリックグラマー ブルゾン",          # blouson/chaqueta
+    "ヒステリックグラマー スウェット",        # sweatshirt
+    "ヒステリックグラマー デニムジャケット",  # denim jacket
+    # — Pantalón (general, una keyword) —
+    "ヒステリックグラマー パンツ",            # pants
+    # — Bolsos (tote, shoulder, backpack) —
+    "ヒステリックグラマー トートバッグ",      # tote
+    "ヒステリックグラマー ショルダーバッグ",  # shoulder
+    "ヒステリックグラマー リュック",          # backpack
+    "ヒステリックグラマー バックパック",      # backpack (variante)
+    # — Accesorios (gorros, jockeys, pulseras, collares) —
+    "ヒステリックグラマー ニット帽",          # gorro de lana
+    "ヒステリックグラマー キャップ",          # jockey/cap
+    "ヒステリックグラマー ブレスレット",      # pulsera
+    "ヒステリックグラマー ネックレス",        # collar
+    "ヒステリックグラマー アクセサリー",      # accesorios general
+    # — Charms —
+    "ヒステリックグラマー チャーム",          # charm
+    "ヒステリックグラマー キーホルダー",      # llavero/charm
+    # — Búsqueda general en inglés —
+    "hysteric glamour hoodie",
+    "hysteric glamour jacket",
 ]
-
-# ─────────────────────────────────────────────
-# FUNCIONES
-# ─────────────────────────────────────────────
 
 def animacion_carga(pagina, segundos, mensaje="Cargando"):
     ciclos = int(segundos / 0.5)
@@ -50,10 +51,8 @@ def animacion_carga(pagina, segundos, mensaje="Cargando"):
         pagina.wait_for_timeout(500)
     sys.stdout.write("\r" + " " * 40 + "\r")
 
-
 def debe_excluir(nombre):
     return any(palabra in nombre for palabra in EXCLUIR)
-
 
 def scrape_keyword(pagina, keyword, vistos, resultados):
     url = (
@@ -69,8 +68,7 @@ def scrape_keyword(pagina, keyword, vistos, resultados):
         print(f"  ⚠️ No cargó: {e}")
         return
 
-    # Scroll para forzar la carga de todos los productos
-    for _ in range(8):
+    for _ in range(13):
         pagina.mouse.wheel(0, 3000)
         animacion_carga(pagina, 0.7, "Cargando productos")
 
@@ -89,7 +87,6 @@ def scrape_keyword(pagina, keyword, vistos, resultados):
             nombre_el = item.query_selector('span[data-testid="thumbnail-item-name"]')
             nombre = nombre_el.inner_text() if nombre_el else "Sin nombre"
 
-            # Filtro de exclusión (poleras, etc.)
             if debe_excluir(nombre):
                 excluidos += 1
                 vistos.add(url_producto)
@@ -117,7 +114,6 @@ def scrape_keyword(pagina, keyword, vistos, resultados):
 
     print(f"  ✅ Agregados: {nuevos}  ❌ Excluidos: {excluidos}  (Total: {len(resultados)})")
 
-
 def buscar_mercari(keywords):
     resultados = []
     vistos = set()
@@ -126,18 +122,13 @@ def buscar_mercari(keywords):
         pagina = navegador.new_page()
         for kw in keywords:
             scrape_keyword(pagina, kw, vistos, resultados)
-            time.sleep(2)  # pausa humana entre búsquedas
+            time.sleep(2)
         navegador.close()
     return resultados
 
-
-# ─────────────────────────────────────────────
-# EJECUCIÓN
-# ─────────────────────────────────────────────
-
 if __name__ == "__main__":
     print("=" * 50)
-    print("DIGGER LÉ SANG — Scraper Mercari")
+    print("DIGGER LÉ SANG — Scraper Hysteric Glamour")
     print(f"Rango de compra: ¥{PRECIO_MIN} – ¥{PRECIO_MAX}")
     print("=" * 50)
 
